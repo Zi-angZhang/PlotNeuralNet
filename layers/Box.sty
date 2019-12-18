@@ -5,7 +5,7 @@
 % Can be used for conv, deconv etc
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \tikzset{Box/.pic={\tikzset{/boxblock/.cd,#1}
-        \tikzstyle{box}=[every edge/.append style={pic actions, densely dashed, opacity=.7},fill opacity=\opacity, pic actions,fill=\fill]
+        \tikzstyle{box}=[every edge/.append style={pic actions, densely dashed, opacity=1},fill opacity=\opacity, pic actions,fill=\fill]
         
         \pgfmathsetmacro{\y}{\cubey*\scale}
         \pgfmathsetmacro{\z}{\cubez*\scale}
@@ -58,10 +58,20 @@
         \coordinate (\name-north)  at (\LastEastx/2,\y/2,0);
         \coordinate (\name-south)  at (\LastEastx/2,-\y/2,0);       
         \coordinate (\name-anchor) at (\LastEastx/2, 0,0) ;
+        \coordinate (\name-eastquar) at (\LastEastx,\y/4,0);       
+        \coordinate (\name-westquar) at (0,\y/4,0) ;
         
         \coordinate (\name-near) at (\LastEastx/2,0,\z/2);
-        \coordinate (\name-far)  at (\LastEastx/2,0,-\z/2);       
+        \coordinate (\name-far)  at (\LastEastx/2,0,-\z/2);   
+
+       \coordinate (\name-nearfoot) at (\LastEastx/2,-\y/2,\z/2);
+        \coordinate (\name-nearhead)  at (\LastEastx/2,\y/2,\z/2);   
+
+        \coordinate (\name-head) at (\LastEastx/2,\y/2,0);
+        \coordinate (\name-foot)  at (\LastEastx/2,-\y/2,0);       
+
         
+
         \coordinate (\name-nearwest) at (0,0,\z/2);
         \coordinate (\name-neareast) at (\LastEastx,0,\z/2);
         \coordinate (\name-farwest)  at (0,0,-\z/2);
@@ -97,7 +107,7 @@
     fill/.store         in=\fill,
     opacity/.store      in=\opacity,
     fill={rgb:red,5;green,5;blue,5;white,15},
-    opacity=0.4,
+    opacity=1,
     width=2,
     height=13,
     depth=15,

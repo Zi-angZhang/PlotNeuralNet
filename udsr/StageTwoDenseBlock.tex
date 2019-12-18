@@ -1,0 +1,477 @@
+
+\documentclass[border=8pt, multi, tikz]{standalone} 
+\usepackage{import}
+\subimport{../layers/}{init}
+\usetikzlibrary{positioning}
+\usetikzlibrary{3d} %for including external image 
+
+\def\ConvColor{rgb:yellow,5;red,2.5;white,5}
+\def\ConvReLUColor{rgb:yellow,5;red,10;black,0.3}
+\def\PoolColor{rgb:red,1;black,0.3}
+\def\UnpoolColor{rgb:blue,2;green,1;black,0.3}
+\def\FcColor{rgb:blue,5;red,2.5;white,5}
+\def\FcReluColor{rgb:blue,5;red,5;white,4}
+\def\SoftmaxColor{rgb:magenta,5;black,7}   
+\def\SumColor{rgb:blue,5; green,2.5; white,5}
+\def\DconvColor{rgb:blue,5;green,15}
+
+\newcommand{\copymidarrow}{\tikz \draw[-Stealth,line width=0.8mm,draw={rgb:blue,4;red,1;green,1;black,3}] (-0.3,0) -- ++(0.3,0);}
+
+\begin{document}
+\begin{tikzpicture}
+\tikzstyle{connection}=[ultra thick,every node/.style={sloped,allow upside down},draw=\edgecolor,opacity=0.7]
+\tikzstyle{copyconnection}=[ultra thick,every node/.style={sloped,allow upside down},draw={rgb:blue,4;red,1;green,1;black,3},opacity=0.7]
+
+
+% convolution first layer
+\pic[shift={(0,0,0)}] at (-1,0,0) 
+    {Box={
+        name=rc1,
+        caption=Conv $3\times 3$,
+        xlabel={{64, }},
+        zlabel=I,
+        fill=\ConvColor,
+        height=64,
+        width=12,
+        depth=64
+        }
+    };
+\pic[shift={(1,0,0)}] at (rc1-east) 
+    {Box={
+        name=relu1,
+        caption=ReLU,
+        xlabel={{64, }},
+        zlabel=I,
+        fill=\ConvReLUColor,
+        height=64,
+        width=12,
+        depth=64
+        }
+    };
+
+
+\pic[shift={(2,-20,0)}] at (relu1-east) 
+    {Box={
+        name=rc2,
+        caption=Strided Conv,
+        xlabel={{64, }},
+        zlabel=I/2,
+        fill=\ConvColor,
+        height=48,
+        width=12,
+        depth=48
+        }
+    };
+\pic[shift={(1,0,0)}] at (rc2-east) 
+    {Box={
+        name=relu2,
+        caption=ReLU,
+        xlabel={{64, }},
+        zlabel=I/2,
+        fill=\ConvReLUColor,
+        height=48,
+        width=12,
+        depth=48
+        }
+    };
+
+
+% lower
+\pic[shift={(5,0,0)}] at (relu2-east) 
+    {Box={
+        name=rc3,
+        caption=Conv $3\times 3$,
+        xlabel={{128, }},
+        zlabel=I/2,
+        fill=\ConvColor,
+        height=48,
+        width=18,
+        depth=48
+        }
+    };
+\pic[shift={(1,0,0)}] at (rc3-east) 
+    {Box={
+        name=relu3,
+        caption=ReLU,
+        xlabel={{128, }},
+        zlabel=I/2,
+        fill=\ConvReLUColor,
+        height=48,
+        width=18,
+        depth=48
+        }
+    };
+
+
+% lower
+\pic[shift={(1,-20,0)}] at (relu3-east) 
+    {Box={
+        name=rc4,
+        caption=Strided Conv,
+        xlabel={{128, }},
+        zlabel=I/4,
+        fill=\ConvColor,
+        height=36,
+        width=18,
+        depth=36
+        }
+    };
+\pic[shift={(1,0,0)}] at (rc4-east) 
+    {Box={
+        name=relu4,
+        caption=ReLU,
+        xlabel={{128, }},
+        zlabel=I/4,
+        fill=\ConvReLUColor,
+        height=36,
+        width=18,
+        depth=36
+        }
+    };
+\pic[shift={(5,0,0)}] at (relu4-east) 
+    {Box={
+        name=rc5,
+        caption=Conv $3\times$3,
+        xlabel={{256, }},
+        zlabel=I/4,
+        fill=\ConvColor,
+        height=36,
+        width=24,
+        depth=36
+        }
+    };
+\pic[shift={(1,0,0)}] at (rc5-east) 
+    {Box={
+        name=relu5,
+        caption=ReLU,
+        xlabel={{256, }},
+        zlabel=I/4,
+        fill=\ConvReLUColor,
+        height=36,
+        width=24,
+        depth=36
+        }
+    };
+
+
+
+% 2nd
+
+\pic[shift={(1,20,0)}] at (relu5-east) 
+    {Box={
+        name=cat1,
+        caption=Concatenation,
+        xlabel={{256, }},
+        zlabel=I/2,
+        fill=\SumColor,
+        height=48,
+        width=36,
+        depth=48
+        }
+    };
+
+
+\pic[shift={(0.5,0,0)}] at (cat1-west) 
+    {Box={
+        name=rc6,
+        caption=Conv,
+        xlabel={{128, }},
+        zlabel=I/2,
+        fill=\ConvColor,
+        height=44,
+        width=14,
+        depth=44
+        }
+    };
+\pic[shift={(3,0,0)}] at (rc6-west) 
+    {Box={
+        name=rc7,
+        caption=DeConv,
+        xlabel={{128, }},
+        zlabel=I/2,
+        fill=\DconvColor,
+        height=44,
+        width=14,
+        depth=44
+        }
+    };
+
+
+\pic[shift={(5,0,0)}] at (cat1-east) 
+    {Box={
+        name=rc8,
+        caption=Conv $1\times$1,
+        xlabel={{128, }},
+        zlabel=I/2,
+        fill=\ConvColor,
+        height=48,
+        width=18,
+        depth=48
+        }
+    };
+\draw [connection] (cat1-east)     -- node{\copymidarrow} (rc8-west);
+
+
+\pic[shift={(1,0,0)}] at (rc8-east) 
+    {Box={
+        name=relu7,
+        caption=ReLU,
+        xlabel={{128, }},
+        zlabel=I/2,
+        fill=\ConvReLUColor,
+        height=48,
+        width=18,
+        depth=48
+        }
+    };
+
+
+
+% upper
+
+\pic[shift={(1,20,0)}] at (relu7-east) 
+    {Box={
+        name=cat2,
+        caption=Concatenation,
+        xlabel={{128, }},
+        zlabel=I,
+        fill=\SumColor,
+        height=64,
+        width=24,
+        depth=64
+        }
+    };
+
+
+\pic[shift={(0.5,0,0)}] at (cat2-west) 
+    {Box={
+        name=rc8,
+        caption=Conv,
+        xlabel={{64, }},
+        zlabel=I,
+        fill=\ConvColor,
+        height=56,
+        width=8,
+        depth=56
+        }
+    };
+
+\pic[shift={(0.5,0,0)}] at (rc8-east) 
+    {Box={
+        name=rc9,
+        caption=DeConv,
+        xlabel={{64, }},
+        zlabel=I,
+        fill=\DconvColor,
+        height=56,
+        width=8,
+        depth=56
+        }
+    };
+
+
+\pic[shift={(7,0,0)}] at (cat2-east) 
+    {Box={
+        name=rc10,
+        caption=Conv $1\times$1,
+        xlabel={{128, }},
+        zlabel=I,
+        fill=\ConvColor,
+        height=64,
+        width=12,
+        depth=64
+        }
+    };
+\pic[shift={(1,0,0)}] at (rc10-east) 
+    {Box={
+        name=relu10,
+        caption=ReLU,
+        xlabel={{64, }},
+        zlabel=I,
+        fill=\ConvReLUColor,
+        height=64,
+        width=12,
+        depth=64
+        }
+    };
+
+\pic[shift={(26,0,0)}] at (relu1-east) 
+    {Box={
+        name=pool1,
+        caption=Pool,
+        xlabel={{64, }},
+        zlabel=1,
+        fill=\ConvColor,
+        height=2,
+        width=12,
+        depth=2
+        }
+    };
+
+\pic[shift={(2,0,0)}] at (pool1-east) 
+    {Box={
+        name=pool2,
+        caption=Conv,
+        xlabel={{8, }},
+        zlabel=1,
+        fill=\ConvColor,
+        height=2,
+        width=8,
+        depth=2
+        }
+    };
+\pic[shift={(2,0,0)}] at (pool2-east) 
+    {Box={
+        name=pool3,
+        caption=Conv,
+        xlabel={{64, }},
+        zlabel=1,
+        fill=\ConvColor,
+        height=2,
+        width=12,
+        depth=2
+        }
+    };
+\pic[shift={(2,0,0)}] at (pool3-east) 
+    {Box={
+        name=sig1,
+        caption=Sigmoid,
+        xlabel={{128, }},
+        zlabel=1,
+        fill=\SoftmaxColor,
+        height=2,
+        width=18,
+        depth=2
+        }
+    };
+
+
+\pic[shift={(2,0,0)}] at (sig1-east) 
+    {Ball={name=mul1,
+        fill=\SumColor,
+        opacity=0.8,
+        radius=2,
+        logo=$\ast$
+        }
+    };
+
+
+\pic[shift={(2,0,0)}] at (relu3-east) 
+    {Box={
+        name=pool4,
+        caption=Pool,
+        xlabel={{128, }},
+        zlabel=1,
+        fill=\ConvColor,
+        height=2,
+        width=18,
+        depth=2
+        }
+    };
+
+\pic[shift={(2,0,0)}] at (pool4-east) 
+    {Box={
+        name=pool5,
+        caption=Conv,
+        xlabel={{16, }},
+        zlabel=1,
+        fill=\ConvColor,
+        height=2,
+        width=12,
+        depth=2
+        }
+    };
+\pic[shift={(2,0,0)}] at (pool5-east) 
+    {Box={
+        name=pool6,
+        caption=Conv,
+        xlabel={{128, }},
+        zlabel=1,
+        fill=\ConvColor,
+        height=2,
+        width=18,
+        depth=2
+        }
+    };
+\pic[shift={(2,0,0)}] at (pool6-east) 
+    {Box={
+        name=sig2,
+        caption=Sigmoid,
+        xlabel={{128, }},
+        zlabel=1,
+        fill=\SoftmaxColor,
+        height=2,
+        width=18,
+        depth=2
+        }
+    };
+
+
+\pic[shift={(2,0,0)}] at (sig2-east) 
+    {Ball={name=mul2,
+        fill=\SumColor,
+        opacity=0.8,
+        radius=2,
+        logo=$\ast$
+        }
+    };
+
+
+
+
+
+\draw [connection]  (relu1-east)    -- node {\copymidarrow} (pool1-west);
+\draw [connection]  (pool1-east)    -- node {\copymidarrow} (pool2-west);
+\draw [connection]  (pool2-east)    -- node {\copymidarrow} (pool3-west);
+\draw [connection]  (pool3-east)    -- node {\copymidarrow} (mul1-west);
+\draw [connection]  (mul1-east)    -- node {\copymidarrow} (rc8-west);
+
+\draw [connection]  (relu3-east)    -- node {\copymidarrow} (pool4-west);
+\draw [connection]  (pool4-east)    -- node {\copymidarrow} (pool5-west);
+\draw [connection]  (pool5-east)    -- node {\copymidarrow} (pool6-west);
+\draw [connection]  (pool6-east)    -- node {\copymidarrow} (mul2-west);
+\draw [connection]  (mul2-east)    -- node {\copymidarrow} (rc6-west);
+
+\path (relu1-west) -- (relu1-east) coordinate[pos=1.4] (relu1-right) ;
+\path (rc2-east)  -- (rc2-west)  coordinate[pos=1.4] (rc2-left) ;
+
+\draw [connection] (relu1-right)     -- node{\copymidarrow} (rc2-left) --node{\midarrow} (rc2-west);
+
+
+\path (mul1-near) -- ++(0,0,10) coordinate[pos=1] (mul1-slot);
+\draw [connection] (relu1-right)    -- node{\copymidarrow} ++(0,0,10) --node{\copymidarrow} (mul1-slot) --node{\midarrow} (mul1-near);
+
+\path (relu7-west) -- (relu7-east) coordinate[pos=1.2] (relu7-right) ;
+\path (cat2-east)  -- (cat2-west)  coordinate[pos=1.1] (cat2-left) ;
+\path (rc9-anchor) -- ++(0, -20, 0) coordinate[pos=1] (rc9-bott);
+\draw [connection] (relu7-right)    -- node{\copymidarrow} (rc9-bott) --node{\midarrow} (rc9-foot);
+
+
+
+
+\path (relu3-west) -- (relu3-east) coordinate[pos=1.15] (relu3-right) ;
+\path (rc4-east)  -- (rc4-west)  coordinate[pos=1.1] (rc4-left) ;
+\draw [connection] (relu3-right)     -- node{\copymidarrow} (rc4-left) --node{\midarrow} (rc4-west);
+\path (mul2-near) -- ++(0,0,10) coordinate[pos=1] (mul2-slot);
+\draw [connection] (relu3-right)    -- node{\copymidarrow} ++(0,0,10) --node{\copymidarrow} (mul2-slot) --node{\midarrow} (mul2-near);
+
+
+\draw [connection] (relu4-east)     -- node{\copymidarrow} (rc5-west);
+\draw [connection] (relu2-east)     -- node{\copymidarrow} (rc3-west);
+\draw [connection] (cat2-east)     -- node{\copymidarrow} (rc10-west);
+
+\path (relu5-west) -- (relu5-east) coordinate[pos=1.1] (relu5-right) ;
+\path (cat1-east)  -- (cat1-west)  coordinate[pos=1.1] (cat1-left) ;
+\path (rc7-anchor) -- ++(0, -20, 0) coordinate[pos=1] (rc7-bott);
+\draw [connection] (relu5-right)    -- node{\copymidarrow} (rc7-bott) --node{\midarrow} (rc7-foot);
+
+
+
+
+%\draw [copyconnection]  (conv0-northeast)  
+%-- node {\copymidarrow}(conv0-top)
+%-- node {\copymidarrow}(conv11-top)
+%-- node {\copymidarrow} (conv11-north);
+
+\end{tikzpicture}
+\end{document}
